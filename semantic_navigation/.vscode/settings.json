@@ -1,0 +1,36 @@
+{
+    "python.autoComplete.extraPaths": [
+        "/home/liyifei/turtlebot3_ws/install/yolo_ros/lib/python3.10/site-packages",
+        "/home/liyifei/turtlebot3_ws/install/yolo_msgs/local/lib/python3.10/dist-packages",
+        "/home/liyifei/turtlebot3_ws/install/turtlebot3_teleop/lib/python3.10/site-packages",
+        "/home/liyifei/turtlebot3_ws/install/turtlebot3_example/lib/python3.10/site-packages",
+        "/home/liyifei/turtlebot3_ws/install/turtlebot3_msgs/local/lib/python3.10/dist-packages",
+        "/home/liyifei/turtlebot3_ws/install/semantic_navigation/lib/python3.10/site-packages",
+        "/home/liyifei/turtlebot3_ws/install/dynamixel_sdk_custom_interfaces/local/lib/python3.10/dist-packages",
+        "/tools/Xilinx/Vitis/2024.2/vfs/python",
+        "/home/liyifei/CP_Perception/install/simulation/lib/python3.10/site-packages",
+        "/home/liyifei/CP_Perception/install/semantic_octomap/local/lib/python3.10/dist-packages",
+        "/home/liyifei/CP_Perception/install/segmenting/lib/python3.10/site-packages",
+        "/home/liyifei/CP_Perception/install/drone_camera/lib/python3.10/site-packages",
+        "/home/liyifei/CP_Perception/install/deeplab_segment/lib/python3.10/site-packages",
+        "/opt/ros/humble/lib/python3.10/site-packages",
+        "/opt/ros/humble/local/lib/python3.10/dist-packages"
+    ],
+    "python.analysis.extraPaths": [
+        "/home/liyifei/turtlebot3_ws/install/yolo_ros/lib/python3.10/site-packages",
+        "/home/liyifei/turtlebot3_ws/install/yolo_msgs/local/lib/python3.10/dist-packages",
+        "/home/liyifei/turtlebot3_ws/install/turtlebot3_teleop/lib/python3.10/site-packages",
+        "/home/liyifei/turtlebot3_ws/install/turtlebot3_example/lib/python3.10/site-packages",
+        "/home/liyifei/turtlebot3_ws/install/turtlebot3_msgs/local/lib/python3.10/dist-packages",
+        "/home/liyifei/turtlebot3_ws/install/semantic_navigation/lib/python3.10/site-packages",
+        "/home/liyifei/turtlebot3_ws/install/dynamixel_sdk_custom_interfaces/local/lib/python3.10/dist-packages",
+        "/tools/Xilinx/Vitis/2024.2/vfs/python",
+        "/home/liyifei/CP_Perception/install/simulation/lib/python3.10/site-packages",
+        "/home/liyifei/CP_Perception/install/semantic_octomap/local/lib/python3.10/dist-packages",
+        "/home/liyifei/CP_Perception/install/segmenting/lib/python3.10/site-packages",
+        "/home/liyifei/CP_Perception/install/drone_camera/lib/python3.10/site-packages",
+        "/home/liyifei/CP_Perception/install/deeplab_segment/lib/python3.10/site-packages",
+        "/opt/ros/humble/lib/python3.10/site-packages",
+        "/opt/ros/humble/local/lib/python3.10/dist-packages"
+    ]
+}
