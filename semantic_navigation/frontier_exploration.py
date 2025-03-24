@@ -87,8 +87,69 @@ class Explorer(Node):
         result = future.result().result
         self.get_logger().info(f"Navigation result: {result}")
         # Optionally, ask for a new goal once the current one finishes
-        new_goal = self.ask_goal_from_user()
+
+        # find frontiers
+        frontiers = self.find_frontiers()
+        self.get_logger().info(f"Found {len(frontiers)} frontiers")
+        # self.get_logger().info(f"Frontiers: {frontiers}")
+
+        # randomly select one frontier
+        selected_frontier = random.choice(frontiers)
+        self.get_logger().info(f"Selected frontier: {selected_frontier}")
+
+        # ask for new goal from user
+        # new_goal = self.ask_goal_from_user()
+
+        frontier_x = selected_frontier.x
+        frontier_y = selected_frontier.y
+
+        new_goal = (frontier_x, frontier_y)
+        
         self.send_goal(new_goal[0], new_goal[1])
+
+    def find_frontiers(self):
+        """
+        Naively find frontier cells.
+        A frontier cell is defined as a free cell (FREE_SPACE) that has at least one neighbor with NO_INFORMATION.
+        Returns a list of Point objects in world coordinates.
+        """
+        frontiers = []
+        if not self.occupancy_grid:
+            return frontiers
+        
+        grid = self.occupancy_grid
+        width = grid.info.width
+        height = grid.info.height
+        resolution = grid.info.resolution
+        origin_x = grid.info.origin.position.x
+        origin_y = grid.info.origin.position.y
+        data = grid.data
+
+        for row in range(height):
+            for col in range(width):
+                index = row * width + col
+                if data[index] == FREE_SPACE:
+                    # Check the 8-connected neighbors
+                    is_frontier = False
+                    for dy in [-1, 0, 1]:
+                        for dx in [-1, 0, 1]:
+                            if dx == 0 and dy == 0:
+                                continue
+                            n_row = row + dy
+                            n_col = col + dx
+                            if 0 <= n_row < height and 0 <= n_col < width:
+                                n_index = n_row * width + n_col
+                                if data[n_index] == NO_INFORMATION:
+                                    is_frontier = True
+                                    break
+                        if is_frontier:
+                            break
+                    if is_frontier:
+                        # Convert grid indices to world coordinates (center of the cell)
+                        world_x = origin_x + (col + 0.5) * resolution
+                        world_y = origin_y + (row + 0.5) * resolution
+                        frontiers.append(Point(x=world_x, y=world_y, z=0.0))
+        return frontiers
 
     # def draw_markers(self, point):
     #     """Visualize exploration point in RViz"""
