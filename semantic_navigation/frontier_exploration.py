@@ -50,53 +50,6 @@ class Explorer(Node):
         width = occupancy_grid.info.width
         height = occupancy_grid.info.height
         self.get_logger().info(f"Received occupancy grid: width={width}, height={height}")
-        self.explore()
-
-    # Helper functions for coordinate conversion
-    def get_index(self, mx, my):
-        return mx + my * self.occupancy_grid.info.width
-
-    def index_to_cells(self, index):
-        width = self.occupancy_grid.info.width
-        my = index // width
-        mx = index % width
-        return mx, my
-
-    def map_to_world(self, mx, my):
-        origin_x = self.occupancy_grid.info.origin.position.x
-        origin_y = self.occupancy_grid.info.origin.position.y
-        resolution = self.occupancy_grid.info.resolution
-        wx = origin_x + mx * resolution
-        wy = origin_y + my * resolution
-        return wx, wy
-
-    def world_to_map(self, wx, wy):
-        origin_x = self.occupancy_grid.info.origin.position.x
-        origin_y = self.occupancy_grid.info.origin.position.y
-        resolution = self.occupancy_grid.info.resolution
-        mx = int((wx - origin_x) / resolution)
-        my = int((wy - origin_y) / resolution)
-        if mx < 0 or mx >= self.occupancy_grid.info.width or my < 0 or my >= self.occupancy_grid.info.height:
-            return False, None, None
-        return True, mx, my
-
-    def find_random_unknown_point(self):
-        """Find a random unknown point in the map"""
-        if self.pose is None or self.occupancy_grid is None:
-            return None
-
-        # Get current robot position
-        position = self.pose.pose.pose.position
-        self.get_logger().info(f"Current position: {position.x}, {position.y}")
-        
-        # Parameters for search
-        MAX_ATTEMPTS = 100
-        MIN_DISTANCE = 1.0  # Min distance from current position in meters
-        MAX_DISTANCE = 5.0  # Max distance from current position in meters
-        
-        cmap = self.occupancy_grid.data
-        width = self.occupancy_grid.info.width
-        height = self.occupancy_grid.info.height
 
     def ask_goal_from_user(self):
         self.get_logger().info("Please enter the goal x and y coordinates:")
