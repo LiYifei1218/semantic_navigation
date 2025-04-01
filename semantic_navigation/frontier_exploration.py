@@ -36,10 +36,20 @@ class Explorer(Node):
 
         # Action client for navigation goals using the NavigateToPose action
         self._action_client = rclpy.action.ActionClient(self, NavigateToPose, 'navigate_to_pose')
+
+        # publisher for frontiers
+        self.frontiers_pub = self.create_publisher(
+            MarkerArray,
+            '/frontiers',
+            10
+        )
         
         # Member variables
         self.pose = None
         self.occupancy_grid = None
+
+        # # 10 second timer to set new goal
+        # self.timer = self.create_timer(10, self.timer_callback)
 
     def pose_topic_callback(self, msg: PoseWithCovarianceStamped):
         self.pose = msg
@@ -93,9 +103,12 @@ class Explorer(Node):
         self.get_logger().info(f"Found {len(frontiers)} frontiers")
         # self.get_logger().info(f"Frontiers: {frontiers}")
 
+        # draw frontiers
+        self.draw_frontiers(frontiers)
+
         # randomly select one frontier
         selected_frontier = random.choice(frontiers)
-        self.get_logger().info(f"Selected frontier: {selected_frontier}")
+        self.get_logger().info(f"Selected frontier: {selected_frontier.x}, {selected_frontier.y}")
 
         # ask for new goal from user
         # new_goal = self.ask_goal_from_user()
@@ -105,6 +118,27 @@ class Explorer(Node):
 
         new_goal = (frontier_x, frontier_y)
         
+        self.send_goal(new_goal[0], new_goal[1])
+
+    # timer callback
+    def timer_callback(self):
+        self.get_logger().info("timeout, asking for new goal")
+        # get random frontier
+        frontiers = self.find_frontiers()
+        self.get_logger().info(f"Found {len(frontiers)} frontiers")
+
+        # draw frontiers
+        self.draw_frontiers(frontiers)
+
+        # randomly select one frontier
+        selected_frontier = random.choice(frontiers)
+        self.get_logger().info(f"Selected frontier: {selected_frontier.x}, {selected_frontier.y}")
+
+        frontier_x = selected_frontier.x
+        frontier_y = selected_frontier.y
+
+        new_goal = (frontier_x, frontier_y)
+
         self.send_goal(new_goal[0], new_goal[1])
 
     def find_frontiers(self):
@@ -151,35 +185,24 @@ class Explorer(Node):
                         frontiers.append(Point(x=world_x, y=world_y, z=0.0))
         return frontiers
 
-    # def draw_markers(self, point):
-    #     """Visualize exploration point in RViz"""
-    #     markers = []
-    #     if point:
-    #         self.get_logger().info(f"Visualising exploration point at: {point.x}, {point.y}")
-    #         marker = Marker()
-    #         marker.header.frame_id = "map"
-    #         marker.header.stamp = self.get_clock().now().to_msg()
-    #         marker.ns = "exploration_points"
-    #         self.marker_id += 1
-    #         marker.id = self.marker_id
-    #         marker.type = Marker.SPHERE
-    #         marker.action = Marker.ADD
-    #         marker.pose.position = point
-    #         marker.pose.orientation.w = 1.0
-    #         marker.scale.x = 0.3
-    #         marker.scale.y = 0.3
-    #         marker.scale.z = 0.3
-    #         marker.color = ColorRGBA(r=0.0, g=1.0, b=0.0, a=1.0)
-    #         markers.append(marker)
-    #     self.markers_msg.markers = markers
-    #     self.marker_array_pub.publish(self.markers_msg)
-
-    # def clear_markers(self):
-    #     """Clear all markers"""
-    #     for marker in self.markers_msg.markers:
-    #         marker.action = Marker.DELETE
-    #     self.marker_array_pub.publish(self.markers_msg)
-    #     self.markers_msg.markers.clear()
+    def draw_frontiers(self, frontiers):
+        markers = MarkerArray()
+        for frontier in frontiers:
+            marker = Marker()
+            marker.header.frame_id = "map"
+            marker.header.stamp = self.get_clock().now().to_msg()
+            marker.ns = "frontiers"
+            marker.id = int(frontier.x * 1000 + frontier.y)
+            marker.type = Marker.SPHERE
+            marker.action = Marker.ADD
+            marker.pose.position = frontier
+            marker.pose.orientation.w = 1.0
+            marker.scale.x = 0.1
+            marker.scale.y = 0.1
+            marker.scale.z = 0.1
+            marker.color = ColorRGBA(r=0.0, g=1.0, b=1.0, a=1.0)
+            markers.markers.append(marker)
+        self.frontiers_pub.publish(markers)
 
 def main(args=None):
     rclpy.init(args=args)
