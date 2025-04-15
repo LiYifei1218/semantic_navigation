@@ -13,6 +13,7 @@ from std_msgs.msg import ColorRGBA
 FREE_SPACE = 0         # Free cell
 NO_INFORMATION = -1    # Unknown cell
 OBSTACLE = 100         # Occupied cell
+FRONTIER = 50         # Frontier cell
 
 class Explorer(Node):
     def __init__(self):
@@ -103,6 +104,11 @@ class Explorer(Node):
         self.get_logger().info(f"Found {len(frontiers)} frontiers")
         # self.get_logger().info(f"Frontiers: {frontiers}")
 
+        # # cluster frontiers
+        # frontier_clusters = self.find_connected_frontiers(frontiers)
+        # self.get_logger().info(f"Found {len(frontier_clusters)} frontier clusters")
+        # # self.get_logger().info(f"Frontier clusters: {frontier_clusters}")
+
         # draw frontiers
         self.draw_frontiers(frontiers)
 
@@ -126,6 +132,11 @@ class Explorer(Node):
         # get random frontier
         frontiers = self.find_frontiers()
         self.get_logger().info(f"Found {len(frontiers)} frontiers")
+
+        # # cluster frontiers
+        # frontier_clusters = self.find_connected_frontiers(frontiers)
+        # self.get_logger().info(f"Found {len(frontier_clusters)} frontier clusters")
+        # # self.get_logger().info(f"Frontier clusters: {frontier_clusters}")
 
         # draw frontiers
         self.draw_frontiers(frontiers)
@@ -183,6 +194,8 @@ class Explorer(Node):
                         world_x = origin_x + (col + 0.5) * resolution
                         world_y = origin_y + (row + 0.5) * resolution
                         frontiers.append(Point(x=world_x, y=world_y, z=0.0))
+                        # change cell to FRONTIER
+                        data[index] = FRONTIER
         return frontiers
 
     def draw_frontiers(self, frontiers):
@@ -203,6 +216,65 @@ class Explorer(Node):
             marker.color = ColorRGBA(r=0.0, g=1.0, b=1.0, a=1.0)
             markers.markers.append(marker)
         self.frontiers_pub.publish(markers)
+
+    def find_connected_frontiers(self, frontier_cells):
+        """
+        Find connected frontier regions using breadth-first search.
+        Returns a list of frontier clusters, where each cluster is a list of Point objects.
+        """
+
+        if not self.occupancy_grid:
+            return []
+
+        #frontier_cells is a list of Point objects, convert to (row, col) tuples
+        hashable_frontier_cells = [(cell.x, cell.y) for cell in frontier_cells]
+    
+        grid = self.occupancy_grid
+        width = grid.info.width
+        height = grid.info.height
+        resolution = grid.info.resolution
+        origin_x = grid.info.origin.position.x
+        origin_y = grid.info.origin.position.y
+        data = grid.data
+
+        # Group connected frontier cells using BFS
+        visited = set()
+        frontier_clusters = []
+        
+        for i in range(len(hashable_frontier_cells)):
+            cell = hashable_frontier_cells[i]
+            self.get_logger().info(f"Checking cell {i}: {cell}")
+            if cell in visited:
+                continue
+            
+            # Start a new cluster
+            cluster = []
+            queue = [cell]
+            visited.add(cell)
+            
+            while queue:
+                current = queue.pop(0)
+                row, col = current
+                
+                # Convert to world coordinates
+                world_x = origin_x + (col + 0.5) * resolution
+                world_y = origin_y + (row + 0.5) * resolution
+                cluster.append(Point(x=world_x, y=world_y, z=0.0))
+                
+                # Add neighbors to queue (8-connected)
+                for dy in [-1, 0, 1]:
+                    for dx in [-1, 0, 1]:
+                        n_row = row + dy
+                        n_col = col + dx
+                        neighbor = (n_row, n_col)
+                        if neighbor in frontier_cells and neighbor not in visited:
+                            queue.append(neighbor)
+                            visited.add(neighbor)
+            
+            if cluster:  # Only add non-empty clusters
+                frontier_clusters.append(cluster)
+        
+        return frontier_clusters
 
 def main(args=None):
     rclpy.init(args=args)
